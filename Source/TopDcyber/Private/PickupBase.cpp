@@ -104,12 +104,9 @@ void APickupBase::InitializePickup()
 			return;
 		}
 
-		// Build a runtime ItemDefinition object from the data table row     
-		ReferenceItem = NewObject<UItemDefinition>(this);
-		ReferenceItem->ID = ItemDataRow->ID;
-		ReferenceItem->ItemType = ItemDataRow->ItemType;
-		ReferenceItem->ItemText = ItemDataRow->ItemText;
-		ReferenceItem->WorldMesh = TempItemDefinition->WorldMesh;
+		    
+		//Create a copy of the item with transient package as the Outer so the item can be safely stored long-term in inventory
+		ReferenceItem = TempItemDefinition->CreateItemCopy(GetTransientPackage());
 
 		// Resolve the item's world mesh from the item definition.
 		// This uses the mesh if it’s already in memory, or loads it if it isn’t.
@@ -160,4 +157,25 @@ void APickupBase::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent,
 		GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &APickupBase::InitializePickup, /*RespawnTiem*/ 4, false);
 	}
 	
+}
+
+/*	Updates this pickup whenever a property is changed.
+*	@param PropertyChangedEvent - contains info about the property that was changed. */
+void APickupBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	// Handle parent class property changes
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	// If a property was changed, get the name of the changed property. Otherwise use none.
+	const FName ChangedPropertyName = PropertyChangedEvent.Property
+		? PropertyChangedEvent.Property->GetFName()
+		: NAME_None;
+
+	// Verify that the changed property is one that affects item lookup in this class
+	if (ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupItemID) ||
+		ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickupBase, PickupDataTable))
+	{
+		InitializePickup();
+	}
+
 }

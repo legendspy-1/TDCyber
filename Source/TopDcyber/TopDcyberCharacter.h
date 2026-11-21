@@ -8,6 +8,11 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class UItemDefinition;
+class AEquippableToolBase;
+class UEquipableItems;
+class UInventoryComponent;
+
 
 /**
  *  A controllable top-down perspective character
@@ -16,6 +21,11 @@ UCLASS(abstract)
 class ATopDcyberCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+protected:
+	// The currently-equipped tool
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tools")
+	TObjectPtr<AEquippableToolBase> EquippedTool;
 
 private:
 
@@ -43,6 +53,19 @@ public:
 
 	/** Returns the Camera Boom component **/
 	USpringArmComponent* GetCameraBoom() const { return CameraBoom.Get(); }
+
+	// Inventory Component
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TObjectPtr<UInventoryComponent> InventoryComponent;
+
+	// Returns whether or not the player already owns this tool
+	UFUNCTION()
+	bool IsToolAlreadyOwned(UEquipableItems* ToolDefinition);
+
+	// Attaches and equips a tool to the player
+	UFUNCTION()
+	void AttachTool(UEquipableItems* ToolDefinition);
+
 
 };
 

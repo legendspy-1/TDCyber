@@ -10,6 +10,11 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "InventoryComponent.h"
+#include "EquipableItems.h"
+#include "EquippableToolBase.h"
+#include "Components/SkeletalMeshComponent.h"
+
 
 ATopDcyberCharacter::ATopDcyberCharacter()
 {
@@ -45,6 +50,10 @@ ATopDcyberCharacter::ATopDcyberCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	// Create an inventory component for the owning player
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
 }
 
 void ATopDcyberCharacter::BeginPlay()
@@ -59,4 +68,35 @@ void ATopDcyberCharacter::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
 
 	// stub
+}
+
+bool ATopDcyberCharacter::IsToolAlreadyOwned(UEquipableItems* ToolDefinition)
+{
+	// Check that the character does not yet have this particular tool
+	for (UEquipableItems* InventoryItem : InventoryComponent->ToolInventory)
+	{
+		if (ToolDefinition->ID == InventoryItem->ID)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void ATopDcyberCharacter::AttachTool(UEquipableItems* ToolDefinition)
+{
+	// Only equip this tool if it isn't already owned
+	if (!IsToolAlreadyOwned(ToolDefinition))
+	{
+		// Spawn a new instance of the tool to equip
+		AEquippableToolBase* ToolToEquip = GetWorld()->SpawnActor<AEquippableToolBase>(ToolDefinition->ToolAsset, this->GetActorTransform());
+	
+		// Attach the tool to the Character
+		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+
+		// Attach the tool to this character, and then the right hand of their first-person mesh
+		ToolToEquip->AttachToActor(this, AttachmentRules);
+		ToolToEquip->AttachToComponent(FirstPersonMeshComponent, AttachmentRules, FName(TEXT("HandGrip_R")));
+	}
+
 }

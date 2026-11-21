@@ -12,6 +12,7 @@ class UInputMappingContext;
 class UInputAction;
 class UPathFollowingComponent;
 
+
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 /**

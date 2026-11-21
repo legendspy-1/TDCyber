@@ -61,6 +61,13 @@ protected:
 	// Timer handle to distinguish the respawn timer.
 	FTimerHandle RespawnTimerHandle;
 
+#if WITH_EDITOR
+
+	// Runs whenever a property on this object is changed in the editor
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+#endif
+
 
 
 public:	
